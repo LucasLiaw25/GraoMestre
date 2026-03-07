@@ -22,7 +22,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -42,11 +42,15 @@ public class Order {
 
     private BigDecimal totalPrice;
 
+    @Column(name = "order_date")
     private LocalDateTime orderDate;
 
     @PrePersist
     protected void onCreate(){
         orderDate = LocalDateTime.now();
+        if (this.orderStatus == null) {
+            this.orderStatus = OrderStatus.PENDING; // Define status inicial como PENDING
+        }
     }
 
 }

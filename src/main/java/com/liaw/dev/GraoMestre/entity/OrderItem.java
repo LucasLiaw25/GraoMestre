@@ -27,7 +27,7 @@ public class OrderItem {
     @Column(name = "price_at_time")
     private BigDecimal priceAtTime;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 

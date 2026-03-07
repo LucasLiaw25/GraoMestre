@@ -11,13 +11,10 @@ import java.util.List;
 
 @Data
 public class OrderRequestDTO {
-    @NotNull(message = "ID do usuário é obrigatório")
-    private Long userId;
-
     @NotNull(message = "Método de pagamento é obrigatório")
     private PaymentMethod paymentMethod;
 
     @Valid
     @Size(min = 1, message = "O pedido deve conter pelo menos um item")
-    private List<OrderItemRequestDTO> orderItems;
+    private List<OrderItemRequestDTO> items;
 }
