@@ -42,11 +42,11 @@ public class Order {
 
     private BigDecimal totalPrice;
 
-    private LocalDateTime registerDate;
+    private LocalDateTime orderDate;
 
     @PrePersist
     protected void onCreate(){
-        registerDate = LocalDateTime.now();
+        orderDate = LocalDateTime.now();
     }
 
 }

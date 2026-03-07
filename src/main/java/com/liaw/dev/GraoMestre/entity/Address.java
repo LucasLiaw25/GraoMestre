@@ -22,6 +22,7 @@ public class Address {
     private String state;
     private String city;
     private String cep;
+    private Boolean isDefault;
 
     @ManyToOne(fetch = FetchType.LAZY)
     public User user;

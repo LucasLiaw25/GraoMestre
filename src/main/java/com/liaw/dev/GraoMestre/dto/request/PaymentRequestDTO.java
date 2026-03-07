@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 public class PaymentRequestDTO {
     @NotNull(message = "Método de pagamento é obrigatório")
     private PaymentMethod paymentMethod;
-
     private PaymentStatus paymentStatus;
     private String txId;
     private BigDecimal totalPrice;
