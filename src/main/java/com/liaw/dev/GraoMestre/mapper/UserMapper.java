@@ -53,7 +53,6 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
         user.setName(dto.getName());
         user.setPhone(dto.getPhone());
-        user.setPassword(dto.getPassword());
         if (dto.getActive() != null) {
             user.setActive(dto.getActive());
         }

@@ -40,3 +40,6 @@ jwt:
 image:
   upload:
     dir: src/main/resources/static/images
+
+app:
+  base-url: localhost:8080
