@@ -22,3 +22,7 @@ jwt:
     key: classpath:certs/authz.pub
   private:
     key: classpath:certs/authz.pem
+
+image:
+  upload:
+    dir: src/main/resources/static/images
