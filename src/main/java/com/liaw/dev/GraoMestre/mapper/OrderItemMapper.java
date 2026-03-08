@@ -22,7 +22,8 @@ public class OrderItemMapper {
         dto.setQuantity(orderItem.getQuantity());
         dto.setPriceAtTime(orderItem.getPriceAtTime());
         if (orderItem.getProduct() != null) {
-            dto.setProduct(ProductMapper.toResponseDTO(orderItem.getProduct()));
+            dto.setProductId(orderItem.getProduct().getId());
+            dto.setProductName(orderItem.getProduct().getName());
         }
         return dto;
     }
