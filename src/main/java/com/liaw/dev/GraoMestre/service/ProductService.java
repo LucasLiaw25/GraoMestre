@@ -10,6 +10,7 @@ import com.liaw.dev.GraoMestre.mapper.ProductMapper;
 import com.liaw.dev.GraoMestre.repository.CategoryRepository;
 import com.liaw.dev.GraoMestre.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,12 @@ public class ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Value("${app.base-url}") // Injetar a base URL da aplicação
+    private String appBaseUrl;
+
+    @Value("${image.base-path}") // Injetar o base path das imagens
+    private String imageBasePath;
+
     @Autowired
     private ImageStorageService imageStorageService;
 
@@ -42,6 +49,27 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com ID: " + id));
         return ProductMapper.toResponseDTO(product);
+    }
+
+    private String buildFullImageUrl(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return null;
+        }
+        // Garante que a URL comece com http:// ou https://
+        String baseUrl = appBaseUrl;
+        if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+            baseUrl = "http://" + baseUrl; // Assumindo HTTP para localhost
+        }
+        // Concatena a base URL, o caminho base das imagens e o nome do arquivo
+        return baseUrl + imageBasePath + fileName;
+    }
+
+    private ProductResponseDTO toResponseDTOWithFullImageUrl(Product product) {
+        ProductResponseDTO dto = ProductMapper.toResponseDTO(product);
+        if (product.getImageUrl() != null) {
+            dto.setImageUrl(buildFullImageUrl(product.getImageUrl()));
+        }
+        return dto;
     }
 
     @Transactional(readOnly = true)
@@ -88,7 +116,7 @@ public class ProductService {
         }
 
         product = productRepository.save(product);
-        return ProductMapper.toResponseDTO(product);
+        return toResponseDTOWithFullImageUrl(product);
     }
 
     @Transactional
@@ -124,7 +152,7 @@ public class ProductService {
         }
 
         product = productRepository.save(product);
-        return ProductMapper.toResponseDTO(product);
+        return toResponseDTOWithFullImageUrl(product);
     }
 
     @Transactional

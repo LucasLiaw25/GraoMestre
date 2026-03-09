@@ -3,24 +3,21 @@ spring:
     name: GraoMestre
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # Use 'update' for development to automatically create/update tables
     show-sql: true
     properties:
       hibernate:
         format_sql: true
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:file:/data/GM_DB
-    username: lucas
-    password: 123
-  h2:
-    console:
-      enabled: true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/gm_db?createDatabaseIfNotExist=true # Connect to gm_db, create if it doesn't exist
+    username: root
+    password: Havan2015@
   mail:
     host: smtp.gmail.com
     port: 587
     username: lucasliaw20@gmail.com
-    password: hurv rsgu nstn eaf
+    password: iitw egju pycb vgyc
     properties:
       mail:
         smtp:
@@ -40,6 +37,10 @@ jwt:
 image:
   upload:
     dir: src/main/resources/static/images
-
+  base-path: /images/
 app:
-  base-url: localhost:8080
+  base-url: localhost:8081
+
+
+server:
+  port: 8081
