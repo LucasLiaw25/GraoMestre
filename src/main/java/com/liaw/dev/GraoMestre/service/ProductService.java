@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors; // Importar Collectors
 
 @Service
 public class ProductService {
@@ -38,30 +39,19 @@ public class ProductService {
     @Autowired
     private ImageStorageService imageStorageService;
 
-    @Transactional(readOnly = true)
-    public List<ProductResponseDTO> findAllProducts() {
-        List<Product> products = productRepository.findAll();
-        return ProductMapper.toResponseDTOList(products);
-    }
-
-    @Transactional(readOnly = true)
-    public ProductResponseDTO findProductById(Long id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com ID: " + id));
-        return ProductMapper.toResponseDTO(product);
-    }
-
     private String buildFullImageUrl(String fileName) {
         if (fileName == null || fileName.isEmpty()) {
             return null;
         }
-        // Garante que a URL comece com http:// ou https://
         String baseUrl = appBaseUrl;
         if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
-            baseUrl = "http://" + baseUrl; // Assumindo HTTP para localhost
+            baseUrl = "http://" + baseUrl;
         }
-        // Concatena a base URL, o caminho base das imagens e o nome do arquivo
-        return baseUrl + imageBasePath + fileName;
+
+        String cleanedBasePath = imageBasePath.startsWith("/") ? imageBasePath : "/" + imageBasePath;
+        cleanedBasePath = cleanedBasePath.endsWith("/") ? cleanedBasePath : cleanedBasePath + "/";
+
+        return baseUrl + cleanedBasePath + fileName;
     }
 
     private ProductResponseDTO toResponseDTOWithFullImageUrl(Product product) {
@@ -73,11 +63,29 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public List<ProductResponseDTO> findAllProducts() {
+        List<Product> products = productRepository.findAll();
+        // Mapeia cada produto para DTO e adiciona a URL completa
+        return products.stream()
+                .map(this::toResponseDTOWithFullImageUrl)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public ProductResponseDTO findProductById(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com ID: " + id));
+        return toResponseDTOWithFullImageUrl(product);
+    }
+
+    @Transactional(readOnly = true)
     public List<ProductResponseDTO> findProductsByCategory(Long categoryId) {
         categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada com ID: " + categoryId));
         List<Product> products = productRepository.findByCategory_Id(categoryId);
-        return ProductMapper.toResponseDTOList(products);
+        return products.stream()
+                .map(this::toResponseDTOWithFullImageUrl)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +94,9 @@ public class ProductService {
             throw new ConflitException("Preços mínimo e máximo inválidos.");
         }
         List<Product> products = productRepository.findByPriceBetween(minPrice, maxPrice);
-        return ProductMapper.toResponseDTOList(products);
+        return products.stream()
+                .map(this::toResponseDTOWithFullImageUrl)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -95,7 +105,9 @@ public class ProductService {
             throw new ConflitException("Termo de busca não pode ser vazio.");
         }
         List<Product> products = productRepository.findByNameOrDescriptionContainingIgnoreCase(searchTerm);
-        return ProductMapper.toResponseDTOList(products);
+        return products.stream()
+                .map(this::toResponseDTOWithFullImageUrl)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -108,14 +120,16 @@ public class ProductService {
 
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                String imageUrl = imageStorageService.storeImage(imageFile);
-                product.setImageUrl(imageUrl);
+                // imageStorageService.storeImage deve retornar APENAS o nome do arquivo (ex: "uuid.webp")
+                String imageFileName = imageStorageService.storeImage(imageFile);
+                product.setImageUrl(imageFileName); // Salva APENAS o nome do arquivo no banco
             } catch (IOException e) {
                 throw new RuntimeException("Erro ao salvar a imagem do produto: " + e.getMessage(), e);
             }
         }
 
         product = productRepository.save(product);
+        // Retorna o DTO com a URL completa para o frontend
         return toResponseDTOWithFullImageUrl(product);
     }
 
@@ -124,7 +138,7 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com ID: " + id));
 
-        String oldImageUrl = product.getImageUrl();
+        String oldImageFileName = product.getImageUrl(); // Agora contém apenas o nome do arquivo
 
         ProductMapper.updateEntityFromDto(productRequestDTO, product);
 
@@ -136,22 +150,27 @@ public class ProductService {
 
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                String newImageUrl = imageStorageService.storeImage(imageFile);
-                product.setImageUrl(newImageUrl);
-                if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
-                    imageStorageService.deleteImage(oldImageUrl);
+                // storeImage deve retornar APENAS o nome do novo arquivo
+                String newImageFileName = imageStorageService.storeImage(imageFile);
+                product.setImageUrl(newImageFileName); // Salva APENAS o nome do novo arquivo no banco
+
+                if (oldImageFileName != null && !oldImageFileName.isEmpty()) {
+                    // deleteImage deve receber APENAS o nome do arquivo
+                    imageStorageService.deleteImage(oldImageFileName);
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Erro ao atualizar a imagem do produto: " + e.getMessage(), e);
             }
         } else if (productRequestDTO.getImageUrl() == null || productRequestDTO.getImageUrl().isEmpty()) {
-            if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
-                imageStorageService.deleteImage(oldImageUrl);
+            // Se a imagem foi removida no DTO e não há novo upload
+            if (oldImageFileName != null && !oldImageFileName.isEmpty()) {
+                imageStorageService.deleteImage(oldImageFileName);
             }
             product.setImageUrl(null);
         }
 
         product = productRepository.save(product);
+        // Retorna o DTO com a URL completa para o frontend
         return toResponseDTOWithFullImageUrl(product);
     }
 
@@ -166,7 +185,7 @@ public class ProductService {
 
         product.setActive(false);
         product = productRepository.save(product);
-        return ProductMapper.toResponseDTO(product);
+        return toResponseDTOWithFullImageUrl(product); // Retorna DTO com URL completa
     }
 
     @Transactional
@@ -180,6 +199,6 @@ public class ProductService {
 
         product.setActive(true);
         product = productRepository.save(product);
-        return ProductMapper.toResponseDTO(product);
+        return toResponseDTOWithFullImageUrl(product); // Retorna DTO com URL completa
     }
 }

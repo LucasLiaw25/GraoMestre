@@ -44,20 +44,24 @@ public class SecurityConfig {
     private RSAPrivateKey privateKey;
 
     @Bean
-    @Order(1)
+    @Order(0)
     public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/users/login", "/api/users/activate", "/api/users/register")
+                .securityMatcher("/api/users/login", "/api/users/activate", "/api/users/register", "/images/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                .headers(header->header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
+                .authorizeHttpRequests(auth -> auth
+                        // Libera explicitamente a rota de imagens para acesso público
+                        .requestMatchers("/images/**").permitAll()
+                        .anyRequest().permitAll()
+                )
+                .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .build();
     }
 
     @Bean
-    @Order(2)
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    @Order(1)
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -66,11 +70,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.HEAD, "/api/users/validate").authenticated()
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(auth->
-                        auth.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(auth-> auth.jwt(Customizer.withDefaults()))
                 .build();
     }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
