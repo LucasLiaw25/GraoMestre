@@ -32,7 +32,7 @@ public class AddressController {
     }
 
     @GetMapping("/user/{userId}")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')")
     public ResponseEntity<List<AddressResponseDTO>> findAddressesByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(addressService.findAddressesByUserId(userId));
     }

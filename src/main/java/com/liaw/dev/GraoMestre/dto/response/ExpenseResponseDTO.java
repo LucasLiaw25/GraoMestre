@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExpenseResponse {
+public class ExpenseResponseDTO {
     private Long id;
     private String name;
     private BigDecimal price;

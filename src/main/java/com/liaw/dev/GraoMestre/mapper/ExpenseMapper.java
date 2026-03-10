@@ -1,15 +1,15 @@
 package com.liaw.dev.GraoMestre.mapper;
 
-import com.liaw.dev.GraoMestre.dto.request.ExpeneRequest;
-import com.liaw.dev.GraoMestre.dto.response.ExpenseResponse;
+import com.liaw.dev.GraoMestre.dto.request.ExpeneRequestDTO;
+import com.liaw.dev.GraoMestre.dto.response.ExpenseResponseDTO;
 import com.liaw.dev.GraoMestre.entity.Expense;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ExpenseMapper {
 
-    public ExpenseResponse toResponse(Expense expense){
-        return new ExpenseResponse(
+    public ExpenseResponseDTO toResponse(Expense expense){
+        return new ExpenseResponseDTO(
                 expense.getId(),
                 expense.getName(),
                 expense.getPrice(),
@@ -17,7 +17,7 @@ public class ExpenseMapper {
         );
     }
 
-    public Expense toEntity (ExpeneRequest request){
+    public Expense toEntity (ExpeneRequestDTO request){
         Expense expense = new Expense();
         expense.setName(request.getName());
         expense.setPrice(request.getPrice());
