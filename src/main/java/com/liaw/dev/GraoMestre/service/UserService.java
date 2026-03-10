@@ -104,7 +104,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO activateUser(String token) {
+    public void activateUser(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Token de ativação inválido."));
 
@@ -125,7 +125,6 @@ public class UserService {
 
         verificationTokenRepository.delete(verificationToken);
 
-        return UserMapper.toResponseDTO(user);
     }
 
     @Transactional(readOnly = true)

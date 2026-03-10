@@ -34,8 +34,11 @@ public class UserController {
     }
 
     @GetMapping("/activate")
-    public ResponseEntity<UserResponseDTO> activateUser(@RequestParam String token) {
-        return ResponseEntity.ok(userService.activateUser(token));
+    public ResponseEntity<String> activateUser(@RequestParam String token) {
+        userService.activateUser(token);
+        return ResponseEntity.ok(
+                "Your account have been successfully activated"
+        );
     }
 
     @GetMapping
