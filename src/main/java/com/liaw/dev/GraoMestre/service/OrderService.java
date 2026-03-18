@@ -11,6 +11,7 @@ import com.liaw.dev.GraoMestre.entity.Product;
 import com.liaw.dev.GraoMestre.entity.User;
 import com.liaw.dev.GraoMestre.enums.OrderStatus;
 import com.liaw.dev.GraoMestre.enums.PaymentStatus;
+import com.liaw.dev.GraoMestre.enums.TimePeriod;
 import com.liaw.dev.GraoMestre.exception.exceptions.ConflitException;
 import com.liaw.dev.GraoMestre.exception.exceptions.EntityNotFoundException;
 import com.liaw.dev.GraoMestre.mapper.OrderMapper;
@@ -25,7 +26,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -380,9 +385,9 @@ public class OrderService {
     private boolean isValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
         switch (currentStatus) {
             case PENDING:
-                return newStatus == OrderStatus.PAID || newStatus == OrderStatus.CANCELED;
+                return newStatus == OrderStatus.PAID || newStatus == OrderStatus.CANCELED || newStatus == OrderStatus.PROCESSING;
             case PAID:
-                return newStatus == OrderStatus.PROCESSING || newStatus == OrderStatus.CANCELED;
+                return newStatus == OrderStatus.PROCESSING || newStatus == OrderStatus.CANCELED || newStatus == OrderStatus.COMPLETED;
             case PROCESSING:
                 return newStatus == OrderStatus.SENDED || newStatus == OrderStatus.CANCELED;
             case SENDED:
@@ -393,6 +398,109 @@ public class OrderService {
                 return false;
             default:
                 return false;
+        }
+    }
+
+    private LocalDateTime getStartOfDay(LocalDate date) {
+        return date.atStartOfDay();
+    }
+
+    private LocalDateTime getEndOfDay(LocalDate date) {
+        return date.atTime(LocalTime.MAX);
+    }
+
+    public List<OrderResponseDTO> findOrdersForToday() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime start = getStartOfDay(today);
+        LocalDateTime end = getEndOfDay(today);
+        List<Order> orders = orderRepository.findByOrderDateBetween(start, end);
+        return orders.stream().map(OrderMapper::toOrderResponseDTO).toList();
+    }
+
+    public List<OrderResponseDTO> findOrdersForYesterday() {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        LocalDateTime start = getStartOfDay(yesterday);
+        LocalDateTime end = getEndOfDay(yesterday);
+        List<Order> orders = orderRepository.findByOrderDateBetween(start, end);
+        return orders.stream().map(OrderMapper::toOrderResponseDTO).toList();
+    }
+
+    public List<OrderResponseDTO> findOrdersForThisWeek() {
+        LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+        LocalDateTime start = getStartOfDay(startOfWeek);
+        LocalDateTime end = getEndOfDay(endOfWeek);
+        List<Order> orders = orderRepository.findByOrderDateBetween(start, end);
+        return orders.stream().map(OrderMapper::toOrderResponseDTO).toList();
+    }
+
+    public List<OrderResponseDTO> findOrdersForLastWeek() {
+        LocalDate today = LocalDate.now();
+        LocalDate endOfLastWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).minusWeeks(1);
+        LocalDate startOfLastWeek = endOfLastWeek.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        LocalDateTime start = getStartOfDay(startOfLastWeek);
+        LocalDateTime end = getEndOfDay(endOfLastWeek);
+        List<Order> orders = orderRepository.findByOrderDateBetween(start, end);
+        return orders.stream().map(OrderMapper::toOrderResponseDTO).toList();
+    }
+
+    public List<OrderResponseDTO> findOrdersForThisMonth() {
+        LocalDate today = LocalDate.now();
+        LocalDate startOfMonth = today.withDayOfMonth(1);
+        LocalDate endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
+
+        LocalDateTime start = getStartOfDay(startOfMonth);
+        LocalDateTime end = getEndOfDay(endOfMonth);
+        List<Order> orders = orderRepository.findByOrderDateBetween(start, end);
+        return orders.stream().map(OrderMapper::toOrderResponseDTO).toList();
+    }
+
+    public List<OrderResponseDTO> findOrdersForLastMonth() {
+        LocalDate today = LocalDate.now();
+        LocalDate startOfLastMonth = today.minusMonths(1).withDayOfMonth(1);
+        LocalDate endOfLastMonth = startOfLastMonth.with(TemporalAdjusters.lastDayOfMonth());
+
+        LocalDateTime start = getStartOfDay(startOfLastMonth);
+        LocalDateTime end = getEndOfDay(endOfLastMonth);
+        List<Order> orders = orderRepository.findByOrderDateBetween(start, end);
+        return orders.stream().map(OrderMapper::toOrderResponseDTO).toList();
+    }
+
+    public List<OrderResponseDTO> findOrdersForCustomPeriod(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Para período CUSTOM, startDate e endDate são obrigatórios");
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Data inicial não pode ser posterior à data final");
+        }
+
+        LocalDateTime start = getStartOfDay(startDate);
+        LocalDateTime end = getEndOfDay(endDate);
+        List<Order> orders = orderRepository.findByOrderDateBetween(start, end);
+        return orders.stream().map(OrderMapper::toOrderResponseDTO).toList();
+    }
+
+    public List<OrderResponseDTO> findOrdersByTimePeriod(TimePeriod timePeriod, LocalDate startDate, LocalDate endDate) {
+        switch (timePeriod) {
+            case TODAY:
+                return findOrdersForToday();
+            case YESTERDAY:
+                return findOrdersForYesterday();
+            case THIS_WEEK:
+                return findOrdersForThisWeek();
+            case LAST_WEEK:
+                return findOrdersForLastWeek();
+            case THIS_MONTH:
+                return findOrdersForThisMonth();
+            case LAST_MONTH:
+                return findOrdersForLastMonth();
+            case CUSTOM:
+                return findOrdersForCustomPeriod(startDate, endDate);
+            default:
+                throw new IllegalArgumentException("Período de tempo inválido");
         }
     }
 }

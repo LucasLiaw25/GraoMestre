@@ -161,12 +161,6 @@ public class ProductService {
             } catch (IOException e) {
                 throw new RuntimeException("Erro ao atualizar a imagem do produto: " + e.getMessage(), e);
             }
-        } else if (productRequestDTO.getImageUrl() == null || productRequestDTO.getImageUrl().isEmpty()) {
-            // Se a imagem foi removida no DTO e não há novo upload
-            if (oldImageFileName != null && !oldImageFileName.isEmpty()) {
-                imageStorageService.deleteImage(oldImageFileName);
-            }
-            product.setImageUrl(null);
         }
 
         product = productRepository.save(product);

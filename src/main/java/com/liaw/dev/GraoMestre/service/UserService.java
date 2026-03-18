@@ -79,7 +79,7 @@ public class UserService {
         VerificationToken verificationToken = new VerificationToken(token, user, expiryDate);
         verificationTokenRepository.save(verificationToken);
 
-        String activationLink = appBaseUrl + "/api/users/activate?token=" + token;
+        String activationLink = "http://" + appBaseUrl + "/api/users/activate?token=" + token;
         emailService.sendActivationEmail(user.getEmail(), activationLink);
 
         return UserMapper.toResponseDTO(user);

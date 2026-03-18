@@ -59,7 +59,7 @@ public class EmailService {
                         border: 1px solid #e0e0e0;
                     }
                     .header {
-                        background-color: #4a2c2a; /* Cor primária escura */
+                        background-color: white
                         color: #ffffff;
                         padding: 30px 25px;
                         text-align: center;

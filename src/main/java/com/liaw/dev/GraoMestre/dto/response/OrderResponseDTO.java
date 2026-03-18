@@ -12,11 +12,11 @@ import java.util.List;
 public class OrderResponseDTO {
     private Long id;
     private Long userId;
-    private String userEmail; // Para facilitar a visualização
+    private String userEmail;
     private List<OrderItemResponseDTO> items;
     private OrderStatus orderStatus;
     private PaymentMethod paymentMethod;
-    private PaymentResponseDTO payment; // Detalhes do pagamento
+    private PaymentResponseDTO payment;
     private LocalDateTime orderDate;
     private BigDecimal totalPrice;
 }
