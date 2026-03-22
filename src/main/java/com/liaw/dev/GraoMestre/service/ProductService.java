@@ -56,25 +56,27 @@ public class ProductService {
 
     private ProductResponseDTO toResponseDTOWithFullImageUrl(Product product) {
         ProductResponseDTO dto = ProductMapper.toResponseDTO(product);
-        if (product.getImageUrl() != null) {
-            dto.setImageUrl(buildFullImageUrl(product.getImageUrl()));
+        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            String cleanUrl = product.getImageUrl();
+    
+            if (cleanUrl.contains("localhost")) {
+                cleanUrl = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
+            }
+
+            dto.setImageUrl(appBaseUrl + imageBasePath + cleanUrl);
         }
         return dto;
     }
 
-    @Transactional(readOnly = true)
     public List<ProductResponseDTO> findAllProducts() {
-        List<Product> products = productRepository.findAll();
-        // Mapeia cada produto para DTO e adiciona a URL completa
-        return products.stream()
-                .map(this::toResponseDTOWithFullImageUrl)
+        return productRepository.findAll().stream()
+                .map(this::toResponseDTOWithFullImageUrl) 
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public ProductResponseDTO findProductById(Long id) {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
         return toResponseDTOWithFullImageUrl(product);
     }
 

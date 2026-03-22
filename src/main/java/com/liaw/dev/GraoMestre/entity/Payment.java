@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -20,8 +21,11 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JoinColumn(name = "order_id")
     @OneToOne(fetch = FetchType.LAZY)
     private Order order;
+
+    private LocalDateTime dateCreated;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
@@ -33,5 +37,32 @@ public class Payment {
 
     private BigDecimal totalPrice;
 
+    @Column(name = "mp_payment_id")
+    private String mpPaymentId;
+
+    @Column(name = "mp_preference_id")
+    private String mpPreferenceId;
+
+    @Column(name = "qr_code_base64", columnDefinition = "TEXT")
+    private String qrCodeBase64;
+
+    @Column(name = "qr_code_text")
+    private String qrCodeText;
+
+    @Column(name = "payment_url")
+    private String paymentUrl;
+
+    @Column(name = "date_of_expiration")
+    private LocalDateTime dateOfExpiration;
+
+    @Column(name = "date_approved")
+    private LocalDateTime dateApproved;
+
+    @PrePersist
+    protected void onCreate(){
+        if(dateCreated == null){
+            dateCreated = LocalDateTime.now();
+        }
+    }
 
 }

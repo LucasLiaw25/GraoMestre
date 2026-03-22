@@ -10,15 +10,15 @@ import com.liaw.dev.GraoMestre.entity.Payment;
 import com.liaw.dev.GraoMestre.entity.Product;
 import com.liaw.dev.GraoMestre.entity.User;
 import com.liaw.dev.GraoMestre.enums.OrderStatus;
+import com.liaw.dev.GraoMestre.enums.PaymentMethod;
 import com.liaw.dev.GraoMestre.enums.PaymentStatus;
 import com.liaw.dev.GraoMestre.enums.TimePeriod;
 import com.liaw.dev.GraoMestre.exception.exceptions.ConflitException;
 import com.liaw.dev.GraoMestre.exception.exceptions.EntityNotFoundException;
 import com.liaw.dev.GraoMestre.mapper.OrderMapper;
-import com.liaw.dev.GraoMestre.repository.OrderItemRepository;
-import com.liaw.dev.GraoMestre.repository.OrderRepository;
-import com.liaw.dev.GraoMestre.repository.ProductRepository;
-import com.liaw.dev.GraoMestre.repository.UserRepository;
+import com.liaw.dev.GraoMestre.repository.*;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -52,28 +52,29 @@ public class OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private MercadoPagoService mercadoPagoService;
+    @Autowired
+    private PaymentRepository paymentRepository;
+
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO) {
         Long userId = SecurityUtils.getCurrentUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + userId));
 
-        // Verificar se já existe um pedido PENDING para este usuário
         Optional<Order> existingPendingOrder = orderRepository.findByUser_IdAndOrderStatus(userId, OrderStatus.PENDING)
-                .stream().findFirst(); // Pega o primeiro, se houver
+                .stream().findFirst();
 
         if (existingPendingOrder.isPresent()) {
-            // Se já existe um pedido PENDING, adicione os itens a ele
             Order order = existingPendingOrder.get();
             return addItemsToExistingOrder(order, orderRequestDTO.getItems());
         } else {
-            // Se não existe, cria um novo pedido
             Order order = new Order();
             order.setUser(user);
             order.setPaymentMethod(orderRequestDTO.getPaymentMethod());
-            order.setOrderStatus(OrderStatus.PENDING); // Garante que o status inicial é PENDING
+            order.setOrderStatus(OrderStatus.PENDING);
 
-            // Processa os itens para o novo pedido
             List<OrderItem> orderItems = processOrderItems(order, orderRequestDTO.getItems());
             order.setOrderItems(orderItems);
 
@@ -88,7 +89,47 @@ public class OrderService {
             order.setPayment(payment);
 
             order = orderRepository.save(order);
+
+            
             return OrderMapper.toOrderResponseDTO(order);
+        }
+    }
+
+    @Transactional
+    public OrderResponseDTO finalizeOrderPayment(Long orderId, PaymentMethod paymentMethod) {
+        Long userId = SecurityUtils.getCurrentUserId();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com ID: " + orderId));
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new ConflitException("Você não tem permissão para finalizar este pedido.");
+        }
+        if (order.getOrderStatus() != OrderStatus.PENDING) {
+            throw new ConflitException("Não é possível finalizar um pedido que não está PENDING.");
+        }
+        if (order.getOrderItems().isEmpty()) {
+            throw new ConflitException("Não é possível finalizar um pedido sem itens.");
+        }
+
+        order.setPaymentMethod(paymentMethod);
+        order.getPayment().setPaymentMethod(paymentMethod);
+        orderRepository.save(order); 
+
+        try {
+        
+            Payment updatedPayment = mercadoPagoService.createMercadoPagoPayment(order, order.getPayment());
+            order.setPayment(updatedPayment); 
+            orderRepository.save(order);
+            paymentRepository.save(updatedPayment); 
+            return OrderMapper.toOrderResponseDTO(order);
+        } catch (MPException | MPApiException e) {
+            System.err.println("Erro ao criar o pagamento no Mercado Pago para o pedido " + orderId + ": " + e.getMessage());
+            if (e instanceof MPApiException) {
+                MPApiException apiException = (MPApiException) e;
+                System.err.println("Status HTTP: " + apiException.getStatusCode());
+                System.err.println("Conteúdo da resposta do MP: " + apiException.getApiResponse().getContent());
+            }
+            throw new RuntimeException("Erro ao criar o pagamento no Mercado Pago. Por favor, tente novamente.", e);
         }
     }
 

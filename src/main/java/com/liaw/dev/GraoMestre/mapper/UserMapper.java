@@ -17,6 +17,7 @@ public class UserMapper {
         user.setEmail(dto.getEmail());
         user.setName(dto.getName());
         user.setPhone(dto.getPhone());
+        user.setCpf(dto.getCpf());
         user.setPassword(dto.getPassword());
         user.setActive(false);
         return user;
@@ -30,6 +31,7 @@ public class UserMapper {
         dto.setPhone(user.getPhone());
         dto.setRegisterDate(user.getRegisterDate());
         dto.setActive(user.getActive());
+        dto.setCpf(user.getCpf());
         if (user.getScopes() != null && !user.getScopes().isEmpty()) {
             dto.setScopes(user.getScopes().stream()
                     .map(ScopeMapper::toResponseDTO)

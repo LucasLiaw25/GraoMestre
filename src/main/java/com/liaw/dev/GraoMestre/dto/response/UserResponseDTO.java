@@ -11,6 +11,7 @@ public class UserResponseDTO {
     private String email;
     private String name;
     private String phone;
+    private String cpf;
     private LocalDateTime registerDate;
     private Boolean active;
     private List<ScopeResponseDTO> scopes;

@@ -25,6 +25,9 @@ public class User {
     private String name;
     private String phone;
 
+    @Column(unique = true)
+    private String cpf;
+
     @Column(name = "register_date")
     private LocalDateTime registerDate;
 

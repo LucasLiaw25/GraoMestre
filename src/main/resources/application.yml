@@ -3,14 +3,14 @@ spring:
     name: GraoMestre
   jpa:
     hibernate:
-      ddl-auto: update # Use 'update' for development to automatically create/update tables
+      ddl-auto: update 
     show-sql: true
     properties:
       hibernate:
         format_sql: true
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/gm_db?createDatabaseIfNotExist=true # Connect to gm_db, create if it doesn't exist
+    url: jdbc:mysql://localhost:3306/gm_db?createDatabaseIfNotExist=true 
     username: root
     password: Havan2015@
   mail:
@@ -39,8 +39,12 @@ image:
     dir: src/main/resources/static/images
   base-path: /images/
 app:
-  base-url: localhost:8081
-
+  base-url: http://192.168.15.88:8081
 
 server:
   port: 8081
+  address: 0.0.0.0
+
+mercadopago:
+  access:
+    token: APP_USR-472750299203932-032216-96b5f9ba975230f25cc4d7c8d4ae9fb2-3284167771

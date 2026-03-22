@@ -4,6 +4,7 @@ import com.liaw.dev.GraoMestre.dto.request.OrderItemRequestDTO;
 import com.liaw.dev.GraoMestre.dto.request.OrderRequestDTO;
 import com.liaw.dev.GraoMestre.dto.response.OrderResponseDTO;
 import com.liaw.dev.GraoMestre.enums.OrderStatus;
+import com.liaw.dev.GraoMestre.enums.PaymentMethod;
 import com.liaw.dev.GraoMestre.enums.TimePeriod;
 import com.liaw.dev.GraoMestre.service.OrderService;
 import jakarta.validation.constraints.Positive;
@@ -34,6 +35,16 @@ public class OrderController {
     public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody OrderRequestDTO orderRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(orderRequestDTO));
     }
+
+    @PostMapping("/{orderId}/finalize-payment")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_USER')")
+    public ResponseEntity<OrderResponseDTO> finalizeOrderPayment(
+            @PathVariable Long orderId,
+            @RequestParam PaymentMethod paymentMethod) {
+        OrderResponseDTO finalizedOrder = orderService.finalizeOrderPayment(orderId, paymentMethod);
+        return ResponseEntity.ok(finalizedOrder);
+    }
+
 
     @PostMapping("/{orderId}/items")
     @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")
