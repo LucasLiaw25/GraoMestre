@@ -3,48 +3,46 @@ spring:
     name: GraoMestre
   jpa:
     hibernate:
-      ddl-auto: update 
-    show-sql: true
+      ddl-auto: update
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/gm_db?createDatabaseIfNotExist=true 
-    username: root
-    password: Havan2015@
+
+    url: jdbc:${MYSQL_URL}
+    username: ${MYSQLUSER}
+    password: ${MYSQLPASSWORD}
   mail:
     host: smtp.gmail.com
     port: 587
-    username: lucasliaw20@gmail.com
-    password: iitw egju pycb vgyc
+    username: ${EMAIL_USER}
+    password: ${EMAIL_PASS}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-            required: true
-          ssl:
-            trust: smtp.gmail.com
 
 jwt:
   public:
-    key: classpath:certs/authz.pub
+    key: ${JWT_PUBLIC_KEY:classpath:certs/authz.pub}
   private:
-    key: classpath:certs/authz.pem
+    key: ${JWT_PRIVATE_KEY:classpath:certs/authz.pem}
 
 image:
   upload:
-    dir: src/main/resources/static/images
+    dir: ${IMAGE_UPLOAD_DIR:/tmp/images}
   base-path: /images/
+
 app:
-  base-url: http://192.168.15.88:8081
+  base-url: ${APP_BASE_URL}
 
 server:
-  port: 8081
-  address: 0.0.0.0
+  port: ${PORT:8081}
 
 mercadopago:
   access:
-    token: APP_USR-472750299203932-032216-96b5f9ba975230f25cc4d7c8d4ae9fb2-3284167771
+    token: ${MP_ACCESS_TOKEN}
