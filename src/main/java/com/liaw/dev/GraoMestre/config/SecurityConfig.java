@@ -60,7 +60,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        // Libera explicitamente a rota de imagens para acesso público
                         .requestMatchers("/images/**").permitAll()
                         .anyRequest().permitAll()
                 )
@@ -85,7 +84,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://192.168.15.88:8081", "http://localhost:8080", "https://localhost:3000", "http://localhost:8081"));
+        configuration.setAllowedOrigins(List.of("http://192.168.15.88:8081", "http://localhost:8080", "https://grao-mestre-prime.vercel.app", "http://localhost:8081"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(List.of(
                 "Authorization",
