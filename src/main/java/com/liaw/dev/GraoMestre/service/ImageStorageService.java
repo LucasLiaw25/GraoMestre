@@ -15,7 +15,7 @@ import java.util.UUID;
 @Service
 public class ImageStorageService {
 
-    @Value("${image.upload.dir:src/main/resources/static/images}")
+    @Value("${image.upload.dir:uploads/images}")
     private String uploadDir;
 
     public String storeImage(MultipartFile file) throws IOException {
@@ -24,13 +24,17 @@ public class ImageStorageService {
         }
 
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectories(uploadPath);
-        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
-        String fileExtension = "";
-        int dotIndex = originalFilename.lastIndexOf('.');
-        if (dotIndex > 0) {
-            fileExtension = originalFilename.substring(dotIndex);
+
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
         }
+
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
         String fileName = UUID.randomUUID().toString() + fileExtension;
 
         Path targetLocation = uploadPath.resolve(fileName);

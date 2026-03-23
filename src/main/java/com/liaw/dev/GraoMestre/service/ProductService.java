@@ -111,16 +111,14 @@ public class ProductService {
 
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                // imageStorageService.storeImage deve retornar APENAS o nome do arquivo (ex: "uuid.webp")
                 String imageFileName = imageStorageService.storeImage(imageFile);
-                product.setImageUrl(imageFileName); // Salva APENAS o nome do arquivo no banco
+                product.setImageUrl(imageFileName);
             } catch (IOException e) {
                 throw new RuntimeException("Erro ao salvar a imagem do produto: " + e.getMessage(), e);
             }
         }
 
         product = productRepository.save(product);
-        // Retorna o DTO com a URL completa para o frontend
         return toResponseDTOWithFullImageUrl(product);
     }
 
