@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize-> authorize
                         .requestMatchers(HttpMethod.HEAD, "/api/users/validate").authenticated()
+                        .requestMatchers("/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(auth-> auth.jwt(Customizer.withDefaults()))
