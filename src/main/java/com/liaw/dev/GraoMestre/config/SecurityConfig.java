@@ -15,6 +15,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -56,15 +57,20 @@ public class SecurityConfig {
     @Order(0)
     public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/users/login", "/api/users/activate", "/api/users/register", "/images/**")
+                .securityMatcher("/images/**", "/api/users/login", "/api/users/activate", "/api/users/register", "/images/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/images/**").permitAll()
                         .anyRequest().permitAll()
                 )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/images/**");
     }
 
     @Bean
@@ -76,7 +82,6 @@ public class SecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize-> authorize
                         .requestMatchers(HttpMethod.HEAD, "/api/users/validate").authenticated()
-                        .requestMatchers("/images/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(auth-> auth.jwt(Customizer.withDefaults()))
