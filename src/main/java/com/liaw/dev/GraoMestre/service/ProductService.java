@@ -40,19 +40,22 @@ public class ProductService {
     private ImageStorageService imageStorageService;
 
     private String buildFullImageUrl(String fileName) {
-        if (fileName == null || fileName.isEmpty()) {
-            return null;
-        }
-        String baseUrl = appBaseUrl;
-        if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
-            baseUrl = "http://" + baseUrl;
-        }
-
-        String cleanedBasePath = imageBasePath.startsWith("/") ? imageBasePath : "/" + imageBasePath;
-        cleanedBasePath = cleanedBasePath.endsWith("/") ? cleanedBasePath : cleanedBasePath + "/";
-
-        return baseUrl + cleanedBasePath + fileName;
+    if (fileName == null || fileName.isEmpty()) {
+        return null;
     }
+    
+    String baseUrl = appBaseUrl.endsWith("/") ? appBaseUrl.substring(0, appBaseUrl.length() - 1) : appBaseUrl;
+    String cleanPath = imageBasePath.startsWith("/") ? imageBasePath : "/" + imageBasePath;
+    if (!cleanPath.endsWith("/")) cleanPath += "/";
+
+    return baseUrl + cleanPath + fileName;
+}
+
+private ProductResponseDTO toResponseDTOWithFullImageUrl(Product product) {
+    ProductResponseDTO dto = ProductMapper.toResponseDTO(product);
+    dto.setImageUrl(buildFullImageUrl(product.getImageUrl())); // Use o método robusto aqui
+    return dto;
+}
 
     private ProductResponseDTO toResponseDTOWithFullImageUrl(Product product) {
         ProductResponseDTO dto = ProductMapper.toResponseDTO(product);

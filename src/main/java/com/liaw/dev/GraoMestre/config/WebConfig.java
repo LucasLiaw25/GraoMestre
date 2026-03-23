@@ -18,10 +18,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String absolutePath = Paths.get(uploadDir).toAbsolutePath().toUri().toString();
+        String handlerPath = basePath.endsWith("/") ? basePath + "**" : basePath + "/**";
+        
+        String location = Paths.get(uploadDir).toAbsolutePath().toUri().toString();
 
-        // Mapeia o caminho da URL para o local físico das imagens
-        registry.addResourceHandler(basePath + "**")
-                .addResourceLocations(absolutePath);
+        registry.addResourceHandler(handlerPath)
+                .addResourceLocations(location)
+                .setCachePeriod(3600);
     }
 }
