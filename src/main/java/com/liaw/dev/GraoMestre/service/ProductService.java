@@ -127,7 +127,7 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado com ID: " + id));
 
-        String oldImageFileName = product.getImageUrl(); // Agora contém apenas o nome do arquivo
+        String oldImageFileName = product.getImageUrl();
 
         ProductMapper.updateEntityFromDto(productRequestDTO, product);
 
@@ -139,21 +139,20 @@ public class ProductService {
 
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                // storeImage deve retornar APENAS o nome do novo arquivo
                 String newImageFileName = imageStorageService.storeImage(imageFile);
-                product.setImageUrl(newImageFileName); // Salva APENAS o nome do novo arquivo no banco
+                product.setImageUrl(newImageFileName);
 
                 if (oldImageFileName != null && !oldImageFileName.isEmpty()) {
-                    // deleteImage deve receber APENAS o nome do arquivo
                     imageStorageService.deleteImage(oldImageFileName);
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Erro ao atualizar a imagem do produto: " + e.getMessage(), e);
             }
+        } else {
+            product.setImageUrl(oldImageFileName);
         }
 
         product = productRepository.save(product);
-        // Retorna o DTO com a URL completa para o frontend
         return toResponseDTOWithFullImageUrl(product);
     }
 
