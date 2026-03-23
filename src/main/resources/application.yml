@@ -10,13 +10,13 @@ spring:
         format_sql: true
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-
     url: jdbc:${MYSQL_URL}
     username: ${MYSQLUSER}
     password: ${MYSQLPASSWORD}
+
   mail:
-    host: smtp.gmail.com
-    port: 465
+    host: ${SPRING_MAIL_HOST:smtp.sendgrid.net}
+    port: ${SPRING_MAIL_PORT:587}
     username: ${EMAIL_USER}
     password: ${EMAIL_PASS}
     properties:
@@ -24,22 +24,22 @@ spring:
         smtp:
           auth: true
           starttls:
-            enable: false
-          ssl:
             enable: true
+          ssl:
+            enable: false
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
 
 jwt:
   public:
-    key: ${JWT_PUBLIC_KEY:classpath:certs/authz.pub}
+    key: ${JWT_PUBLIC_KEY}
   private:
-    key: ${JWT_PRIVATE_KEY:classpath:certs/authz.pem}
+    key: ${JWT_PRIVATE_KEY}
 
 image:
   upload:
-    dir: ${IMAGE_UPLOAD_DIR:/tmp/images}
+    dir: ${IMAGE_UPLOAD_DIR:/app/uploads}
   base-path: /images/
 
 app:

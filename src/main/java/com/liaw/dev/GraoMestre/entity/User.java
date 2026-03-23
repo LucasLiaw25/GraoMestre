@@ -31,7 +31,7 @@ public class User {
     @Column(name = "register_date")
     private LocalDateTime registerDate;
 
-    private Boolean active = true;
+    private Boolean active = false;
 
     @ManyToMany
     @JoinTable(

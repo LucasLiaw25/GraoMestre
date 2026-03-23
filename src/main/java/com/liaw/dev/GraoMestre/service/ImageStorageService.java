@@ -9,17 +9,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
 public class ImageStorageService {
 
-    @Value("${image.upload.dir:uploads/images}")
+    @Value("${image.upload.dir:/app/uploads}")
     private String uploadDir;
 
     public String storeImage(MultipartFile file) throws IOException {
-        if (file.isEmpty()) {
+        if (file == null || file.isEmpty()) {
             throw new IOException("Falha ao armazenar arquivo vazio.");
         }
 
@@ -47,23 +46,15 @@ public class ImageStorageService {
         if (fileName == null || fileName.isEmpty()) {
             return false;
         }
-        Path filePath = Paths.get(uploadDir).resolve(fileName).normalize();
         try {
+            Path filePath = Paths.get(uploadDir).toAbsolutePath().resolve(fileName).normalize();
             return Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            System.err.println("Erro ao excluir imagem: " + fileName + " - " + e.getMessage());
             return false;
         }
     }
 
-    /**
-     * Retorna o caminho completo da imagem no sistema de arquivos.
-     * Útil para construir URLs ou para acesso direto.
-     *
-     * @param fileName O nome do arquivo da imagem.
-     * @return O caminho completo da imagem.
-     */
     public Path loadImagePath(String fileName) {
-        return Paths.get(uploadDir).resolve(fileName).normalize();
+        return Paths.get(uploadDir).toAbsolutePath().resolve(fileName).normalize();
     }
 }

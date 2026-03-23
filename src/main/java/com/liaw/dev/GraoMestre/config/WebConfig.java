@@ -10,15 +10,21 @@ import java.nio.file.Paths;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${image.upload.dir:uploads/images}")
+    @Value("${image.upload.dir:/app/uploads}")
     private String uploadDir;
+
+    @Value("${image.base-path:/images/}")
+    private String basePath;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String path = Paths.get(uploadDir).toAbsolutePath().toUri().toString();
+        String location = Paths.get(uploadDir).toAbsolutePath().toUri().toString();
 
-        registry.addResourceHandler("/images/**")
-                .addResourceLocations(path);
+        String handlerPath = basePath.endsWith("/") ? basePath + "**" : basePath + "/**";
+
+        registry.addResourceHandler(handlerPath)
+                .addResourceLocations(location)
+                .setCachePeriod(3600);
     }
 
 }

@@ -3,6 +3,7 @@ package com.liaw.dev.GraoMestre.service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -13,20 +14,24 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Value("${spring.mail.username.sender:lucasliaw20@gmail.com}")
+    private String fromEmail;
+
     public void sendActivationEmail(String toEmail, String activationLink) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom("lucasliaw20@gmail.com");
+            helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject("Ative sua conta Grão Mestre");
+            helper.setSubject("Ative sua conta - Grão Mestre");
 
             String htmlContent = buildActivationEmailHtml(activationLink);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
         } catch (MessagingException e) {
+            System.err.println("Erro ao enviar e-mail via SendGrid: " + e.getMessage());
             throw new RuntimeException("Falha ao enviar e-mail de ativação", e);
         }
     }
