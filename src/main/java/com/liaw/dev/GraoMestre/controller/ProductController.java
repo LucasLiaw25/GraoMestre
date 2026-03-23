@@ -22,20 +22,17 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')") // Users can browse products
+    @GetMapping// Users can browse products
     public ResponseEntity<List<ProductResponseDTO>> findAllProducts() {
         return ResponseEntity.ok(productService.findAllProducts());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')")
     public ResponseEntity<ProductResponseDTO> findProductById(@PathVariable Long id) {
         return ResponseEntity.ok(productService.findProductById(id));
     }
 
     @GetMapping("/category/{categoryId}")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')")
     public ResponseEntity<List<ProductResponseDTO>> findProductsByCategory(@PathVariable Long categoryId) {
         return ResponseEntity.ok(productService.findProductsByCategory(categoryId));
     }
