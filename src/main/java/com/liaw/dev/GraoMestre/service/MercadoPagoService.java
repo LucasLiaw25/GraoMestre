@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -101,6 +102,7 @@ public class MercadoPagoService {
 
         LocalDateTime expirationLocalDateTime = LocalDateTime.now().plusMinutes(30);
         OffsetDateTime expirationOffsetDateTime = expirationLocalDateTime.atOffset(ZoneOffset.UTC);
+        String formattedDateOfExpiration = expirationOffsetDateTime.format(DateTimeFormatter.ISO_INSTANT);
 
         PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.builder()
                 .transactionAmount(order.getTotalPrice())
@@ -109,7 +111,7 @@ public class MercadoPagoService {
                 .payer(payer)
                 .externalReference(String.valueOf(order.getId()))
                 .notificationUrl(appConfig.getWebhookUrl())
-                .dateOfExpiration(expirationOffsetDateTime)
+                .dateOfExpiration(formattedDateOfExpiration)
                 .build();
 
         com.mercadopago.resources.payment.Payment mpPayment = paymentClient.create(paymentCreateRequest);
