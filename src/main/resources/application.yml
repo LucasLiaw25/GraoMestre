@@ -14,23 +14,6 @@ spring:
     username: ${MYSQLUSER}
     password: ${MYSQLPASSWORD}
 
-  mail:
-    host: ${SPRING_MAIL_HOST:smtp.sendgrid.net}
-    port: ${SPRING_MAIL_PORT:587}
-    username: ${EMAIL_USER}
-    password: ${EMAIL_PASS}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          ssl:
-            enable: false
-          connectiontimeout: 10000
-          timeout: 5000
-          writetimeout: 5000
-
 jwt:
   public:
     key: ${JWT_PUBLIC_KEY}

@@ -1,5 +1,12 @@
 package com.liaw.dev.GraoMestre.service;
 
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,31 +15,42 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${EMAIL_PASS}")
+    private String sendGridApiKey;
 
     @Value("${spring.mail.username.sender:lucasliaw20@gmail.com}")
     private String fromEmail;
 
     public void sendActivationEmail(String toEmail, String activationLink) {
+        Email from = new Email(fromEmail);
+        String subject = "Ative sua conta - Grão Mestre";
+        Email to = new Email(toEmail);
+
+        String htmlContent = buildActivationEmailHtml(activationLink);
+        Content content = new Content("text/html", htmlContent);
+
+        Mail mail = new Mail(from, subject, to, content);
+        SendGrid sg = new SendGrid(sendGridApiKey);
+        Request request = new Request();
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
 
-            helper.setFrom(fromEmail);
-            helper.setTo(toEmail);
-            helper.setSubject("Ative sua conta - Grão Mestre");
+            Response response = sg.api(request);
 
-            String htmlContent = buildActivationEmailHtml(activationLink);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            System.err.println("Erro ao enviar e-mail via SendGrid: " + e.getMessage());
-            throw new RuntimeException("Falha ao enviar e-mail de ativação", e);
+            if (response.getStatusCode() >= 400) {
+                System.err.println("Erro SendGrid API: " + response.getBody());
+                throw new RuntimeException("Falha no envio via API SendGrid");
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException("Erro de rede ao contactar SendGrid API", ex);
         }
     }
 
