@@ -71,7 +71,7 @@ public class UserService {
                     return scopeRepository.save(newScope);
                 });
         user.setScopes(Collections.singletonList(defaultScope));
-
+        user.setActive(true);
         user = userRepository.save(user);
 
         String token = UUID.randomUUID().toString();
@@ -80,7 +80,6 @@ public class UserService {
         verificationTokenRepository.save(verificationToken);
 
         String activationLink = "http://" + appBaseUrl + "/api/users/activate?token=" + token;
-        emailService.sendActivationEmail(user.getEmail(), activationLink);
 
         return UserMapper.toResponseDTO(user);
     }
