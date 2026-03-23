@@ -40,34 +40,20 @@ public class ProductService {
     private ImageStorageService imageStorageService;
 
     private String buildFullImageUrl(String fileName) {
-    if (fileName == null || fileName.isEmpty()) {
-        return null;
+        if (fileName == null || fileName.isEmpty()) {
+            return null;
+        }
+
+        String baseUrl = appBaseUrl.endsWith("/") ? appBaseUrl.substring(0, appBaseUrl.length() - 1) : appBaseUrl;
+        String cleanPath = imageBasePath.startsWith("/") ? imageBasePath : "/" + imageBasePath;
+        if (!cleanPath.endsWith("/")) cleanPath += "/";
+
+        return baseUrl + cleanPath + fileName;
     }
-    
-    String baseUrl = appBaseUrl.endsWith("/") ? appBaseUrl.substring(0, appBaseUrl.length() - 1) : appBaseUrl;
-    String cleanPath = imageBasePath.startsWith("/") ? imageBasePath : "/" + imageBasePath;
-    if (!cleanPath.endsWith("/")) cleanPath += "/";
-
-    return baseUrl + cleanPath + fileName;
-}
-
-private ProductResponseDTO toResponseDTOWithFullImageUrl(Product product) {
-    ProductResponseDTO dto = ProductMapper.toResponseDTO(product);
-    dto.setImageUrl(buildFullImageUrl(product.getImageUrl())); // Use o método robusto aqui
-    return dto;
-}
 
     private ProductResponseDTO toResponseDTOWithFullImageUrl(Product product) {
         ProductResponseDTO dto = ProductMapper.toResponseDTO(product);
-        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
-            String cleanUrl = product.getImageUrl();
-    
-            if (cleanUrl.contains("localhost")) {
-                cleanUrl = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
-            }
-
-            dto.setImageUrl(appBaseUrl + imageBasePath + cleanUrl);
-        }
+        dto.setImageUrl(buildFullImageUrl(product.getImageUrl()));
         return dto;
     }
 
