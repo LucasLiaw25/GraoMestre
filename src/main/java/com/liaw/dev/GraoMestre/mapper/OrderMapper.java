@@ -46,7 +46,7 @@ public class OrderMapper {
         OrderResponseDTO dto = new OrderResponseDTO();
         dto.setId(order.getId());
         dto.setUserId(order.getUser().getId());
-        dto.setUserEmail(order.getUser().getEmail());
+        dto.setUserEmail(order.getUser().getName());
         dto.setOrderStatus(order.getOrderStatus());
         dto.setPaymentMethod(order.getPaymentMethod());
         dto.setOrderDate(order.getOrderDate());

@@ -14,6 +14,8 @@ spring:
     username: ${MYSQLUSER}
     password: ${MYSQLPASSWORD}
 
+
+
 jwt:
   public:
     key: ${JWT_PUBLIC_KEY}
@@ -22,7 +24,7 @@ jwt:
 
 image:
   upload:
-    dir: ${IMAGE_UPLOAD_DIR:/app/uploads}
+    dir: ${IMAGE_UPLOAD_DIR:/app/uploads} # Apontando para o seu Volume persistente
   base-path: /images/
 
 app:
@@ -34,3 +36,8 @@ server:
 mercadopago:
   access:
     token: ${MP_ACCESS_TOKEN}
+  urls:
+    webhook: ${MP_WEBHOOK_URL}
+    success: ${MP_SUCCESS_URL}
+    failure: ${MP_FAILURE_URL}
+    pending: ${MP_PENDING_URL}

@@ -116,12 +116,12 @@ public class SecurityConfig {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthoritiesClaimName("scope");
         grantedAuthoritiesConverter.setAuthorityPrefix("SCOPE_"); // Adicione o prefixo aqui
-        
+
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
         return jwtAuthenticationConverter;
     }
-    
+
     @Bean
     public JwtEncoder jwtEncoder() throws NoSuchAlgorithmException, InvalidKeySpecException {
         RSAPublicKey publicKey = parsePublicKey(publicKeyContent);
