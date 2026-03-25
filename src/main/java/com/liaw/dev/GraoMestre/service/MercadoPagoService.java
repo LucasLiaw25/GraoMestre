@@ -100,10 +100,6 @@ public class MercadoPagoService {
                 .identification(identification)
                 .build();
 
-        LocalDateTime expirationLocalDateTime = LocalDateTime.now().plusMinutes(30);
-        OffsetDateTime expirationOffsetDateTime = expirationLocalDateTime.atOffset(ZoneOffset.UTC);
-        String formattedDateOfExpiration = expirationOffsetDateTime.format(DateTimeFormatter.ISO_INSTANT);
-
         PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.builder()
                 .transactionAmount(order.getTotalPrice())
                 .description("Pagamento para o pedido #" + order.getId())
@@ -111,7 +107,7 @@ public class MercadoPagoService {
                 .payer(payer)
                 .externalReference(String.valueOf(order.getId()))
                 .notificationUrl(appConfig.getWebhookUrl())
-                .dateOfExpiration(formattedDateOfExpiration)
+                .dateOfExpiration(OffsetDateTime.now().plusMinutes(30))
                 .build();
 
         com.mercadopago.resources.payment.Payment mpPayment = paymentClient.create(paymentCreateRequest);
