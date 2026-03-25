@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -107,7 +108,7 @@ public class MercadoPagoService {
                 .payer(payer)
                 .externalReference(String.valueOf(order.getId()))
                 .notificationUrl(appConfig.getWebhookUrl())
-                .dateOfExpiration(OffsetDateTime.now().plusMinutes(30))
+                .dateOfExpiration(OffsetDateTime.now().plusMinutes(30).truncatedTo(ChronoUnit.SECONDS))
                 .build();
 
         com.mercadopago.resources.payment.Payment mpPayment = paymentClient.create(paymentCreateRequest);
