@@ -116,11 +116,13 @@ public class OrderService {
         orderRepository.save(order); 
 
         try {
-        
             Payment updatedPayment = mercadoPagoService.createMercadoPagoPayment(order, order.getPayment());
-            order.setPayment(updatedPayment); 
+            updatedPayment.setOrder(order);
+
+            order.setPayment(updatedPayment);
+            paymentRepository.save(updatedPayment);
             orderRepository.save(order);
-            paymentRepository.save(updatedPayment); 
+
             return OrderMapper.toOrderResponseDTO(order);
         } catch (MPException | MPApiException e) {
             System.err.println("Erro ao criar o pagamento no Mercado Pago para o pedido " + orderId + ": " + e.getMessage());
