@@ -102,6 +102,8 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com ID: " + orderId));
 
+        Payment currentPayment = order.getPayment();
+
         if (!order.getUser().getId().equals(userId)) {
             throw new ConflitException("Você não tem permissão para finalizar este pedido.");
         }
@@ -117,14 +119,14 @@ public class OrderService {
         orderRepository.save(order); 
 
         try {
-            Payment updatedPayment = mercadoPagoService.createMercadoPagoPayment(order, order.getPayment());
+            Payment updatedPayment = mercadoPagoService.createMercadoPagoPayment(order, currentPayment);
             updatedPayment.setOrder(order);
 
             order.setPayment(updatedPayment);
-            paymentRepository.save(updatedPayment);
-            orderRepository.save(order);
+            paymentRepository.saveAndFlush(updatedPayment);
+            Order savedOrder = orderRepository.save(order);
 
-            return OrderMapper.toOrderResponseDTO(order);
+            return OrderMapper.toOrderResponseDTO(savedOrder);
         } catch (MPException | MPApiException e) {
             System.err.println("Erro ao criar o pagamento no Mercado Pago para o pedido " + orderId + ": " + e.getMessage());
             if (e instanceof MPApiException) {
