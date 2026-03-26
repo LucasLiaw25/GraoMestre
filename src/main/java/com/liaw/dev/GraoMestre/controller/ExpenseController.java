@@ -62,7 +62,6 @@ public class ExpenseController {
         return ResponseEntity.ok(expenseService.findExpensesByTimePeriod(timePeriod, startDate, endDate));
     }
 
-    // Endpoints específicos para períodos comuns, se preferir ter URLs mais diretas
     @GetMapping("/today")
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER')")
     public ResponseEntity<List<ExpenseResponseDTO>> getExpensesForToday() {

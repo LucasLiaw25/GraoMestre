@@ -22,7 +22,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping// Users can browse products
+    @GetMapping
     public ResponseEntity<List<ProductResponseDTO>> findAllProducts() {
         return ResponseEntity.ok(productService.findAllProducts());
     }

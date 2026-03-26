@@ -48,26 +48,26 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')") // User can view their own profile
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')")
     public ResponseEntity<UserResponseDTO> findUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findUserById(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')") // User can update their own profile
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')")
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long id, @Valid @RequestBody UserRequestDTO userRequestDTO) {
         return ResponseEntity.ok(userService.updateUser(id, userRequestDTO));
     }
 
     @PutMapping("/{id}/password")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')") // User can update their own password
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')")
     public ResponseEntity<UserResponseDTO> updateUserPassword(@PathVariable Long id, @RequestBody Map<String, String> passwordMap) {
         String newPassword = passwordMap.get("newPassword");
         return ResponseEntity.ok(userService.updateUserPassword(id, newPassword));
     }
 
     @PutMapping("/{id}/scopes")
-    @PreAuthorize("hasAuthority('SCOPE_ADMIN')") // Only admin can update user scopes
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     public ResponseEntity<UserResponseDTO> updateUserScopes(@PathVariable Long id, @RequestBody List<Long> scopeIds) {
         return ResponseEntity.ok(userService.updateUserScopes(id, scopeIds));
     }

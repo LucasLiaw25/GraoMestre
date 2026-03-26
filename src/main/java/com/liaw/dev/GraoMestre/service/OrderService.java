@@ -344,9 +344,9 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponseDTO> getMyOrderHistory() {
+    public List<OrderResponseDTO> getMyOrderHistory(Pageable pageable) {
         Long userId = SecurityUtils.getCurrentUserId();
-        List<Order> orders = orderRepository.findByUser_Id(userId);
+        List<Order> orders = orderRepository.findByUser_IdOrderByIdDesc(userId, pageable);
         return OrderMapper.toOrderResponseDTOList(orders);
     }
 
@@ -392,7 +392,7 @@ public class OrderService {
         } else if (startDate != null && endDate != null) {
             orders = orderRepository.findByOrderDateBetween(startDate, endDate, pageable);
         } else if (userId != null) {
-            orders = orderRepository.findByUser_Id(userId, pageable);
+            orders = orderRepository.findByUser_IdOrderByIdDesc(userId, pageable);
         } else if (status != null) {
             orders = orderRepository.findByOrderStatus(status, pageable);
         } else {

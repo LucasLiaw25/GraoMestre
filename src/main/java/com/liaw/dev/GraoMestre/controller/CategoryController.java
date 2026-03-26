@@ -20,7 +20,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')") // Users can browse categories
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')")
     public ResponseEntity<List<CategoryResponseDTO>> findAllCategories() {
         return ResponseEntity.ok(categoryService.findAllCategories());
     }

@@ -31,7 +31,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')") // Users/Drivers can create orders
+    @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")
     public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody OrderRequestDTO orderRequestDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(orderRequestDTO));
     }
@@ -73,8 +73,8 @@ public class OrderController {
 
     @GetMapping("/my")
     @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")
-    public ResponseEntity<List<OrderResponseDTO>> getMyOrderHistory() {
-        return ResponseEntity.ok(orderService.getMyOrderHistory());
+    public ResponseEntity<List<OrderResponseDTO>> getMyOrderHistory(Pageable pageable) {
+        return ResponseEntity.ok(orderService.getMyOrderHistory(pageable));
     }
 
     @GetMapping("/my/{orderId}")
@@ -84,12 +84,11 @@ public class OrderController {
     }
 
     @GetMapping("/my/status/{status}")
-    @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')") // Users/Drivers can filter their own orders by status
+    @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")
     public ResponseEntity<List<OrderResponseDTO>> getMyOrdersByStatus(@PathVariable OrderStatus status) {
         return ResponseEntity.ok(orderService.getMyOrdersByStatus(status));
     }
 
-    // Admin/Manager endpoints
     @GetMapping
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER')")
     public ResponseEntity<Page<OrderResponseDTO>> getAllOrders(Pageable pageable) {
@@ -122,7 +121,7 @@ public class OrderController {
     }
 
     @GetMapping("/today")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_USER')") // Ajuste as autoridades conforme necessário
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_USER')")
     public ResponseEntity<List<OrderResponseDTO>> getOrdersForToday() {
         List<OrderResponseDTO> orders = orderService.findOrdersForToday();
         return ResponseEntity.ok(orders);
@@ -172,7 +171,6 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    // Endpoint genérico que usa o enum TimePeriod
     @GetMapping("/by-period")
     @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_USER')")
     public ResponseEntity<List<OrderResponseDTO>> getOrdersByTimePeriod(

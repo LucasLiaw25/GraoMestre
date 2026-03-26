@@ -1,4 +1,4 @@
-package com.liaw.dev.GraoMestre.controller; // Ajuste o pacote conforme a estrutura do seu projeto
+package com.liaw.dev.GraoMestre.controller;
 
 import com.liaw.dev.GraoMestre.dto.response.TopProductResponse;
 import com.liaw.dev.GraoMestre.enums.TimePeriod;
@@ -38,7 +38,6 @@ public class FinancialReportController {
         } else if (startDate != null && endDate != null) {
             return ResponseEntity.ok(financialReportService.generateFinancialReport(startDate.atStartOfDay(), endDate.atTime(23, 59, 59)));
         } else {
-            // Default para o dia atual se nenhum período ou data for fornecido
             return ResponseEntity.ok(financialReportService.getDailyFinancialSummary());
         }
     }
