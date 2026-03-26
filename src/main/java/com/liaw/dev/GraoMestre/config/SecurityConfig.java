@@ -57,7 +57,7 @@ public class SecurityConfig {
     @Order(0)
     public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/images/**","/api/products", "/api/users/login", "/api/users/activate", "/api/users/register")
+                .securityMatcher("/api/webhooks/mercadopago", "/images/**","/api/products", "/api/users/login", "/api/users/activate", "/api/users/register")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth

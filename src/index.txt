@@ -1,122 +1,13 @@
-public static PaymentResponseDTO toResponseDTO(Payment payment) {
-        PaymentResponseDTO dto = new PaymentResponseDTO();
-        dto.setOrderId(payment.getOrder().getId());
-        dto.setQrCodeBase64(payment.getQrCodeBase64());
-        dto.setQrCodeText(payment.getQrCodeText());
-        dto.setPaymentUrl(payment.getPaymentUrl());
-        dto.setDateOfExpiration(payment.getDateOfExpiration());
-        dto.setDateApproved(payment.getDateApproved());
-        dto.setId(payment.getId());
-        dto.setPaymentMethod(payment.getPaymentMethod());
-        dto.setPaymentStatus(payment.getPaymentStatus());
-        dto.setTxId(payment.getTxId());
-        dto.setTotalPrice(payment.getTotalPrice());
-        if (payment.getOrder() != null) {
-            dto.setOrderId(payment.getOrder().getId());
-        }
-        return dto;
-}
+UserId: 3284167773
+Usuário: TESTUSER5784651657946276369
+Senha: tm5RHL7xLq
+Código: 167773
 
+Mastercard
+Número: 5031 4332 1540 6351
+Código de Segurança: 123
+Validade: 11/30
 
-    @Transactional
-    public OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO) {
-        Long userId = SecurityUtils.getCurrentUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + userId));
-
-        Optional<Order> existingPendingOrder = orderRepository.findByUser_IdAndOrderStatus(userId, OrderStatus.PENDING)
-                .stream().findFirst();
-
-        if (existingPendingOrder.isPresent()) {
-            Order order = existingPendingOrder.get();
-            return addItemsToExistingOrder(order, orderRequestDTO.getItems());
-        } else {
-            Order order = new Order();
-            order.setUser(user);
-            order.setPaymentMethod(orderRequestDTO.getPaymentMethod());
-            order.setOrderStatus(OrderStatus.PENDING);
-
-            List<OrderItem> orderItems = processOrderItems(order, orderRequestDTO.getItems());
-            order.setOrderItems(orderItems);
-
-            BigDecimal totalOrderPrice = calculateTotalPrice(orderItems);
-            order.setTotalPrice(totalOrderPrice);
-
-            Payment payment = new Payment();
-            payment.setOrder(order);
-            payment.setPaymentMethod(orderRequestDTO.getPaymentMethod());
-            payment.setPaymentStatus(PaymentStatus.PENDING);
-            payment.setTotalPrice(totalOrderPrice);
-            order.setPayment(payment);
-
-            order = orderRepository.save(order);
-
-
-            return OrderMapper.toOrderResponseDTO(order);
-        }
-    }
-
-    @Transactional
-    public OrderResponseDTO finalizeOrderPayment(Long orderId, PaymentMethod paymentMethod) {
-        Long userId = SecurityUtils.getCurrentUserId();
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com ID: " + orderId));
-
-        if (!order.getUser().getId().equals(userId)) {
-            throw new ConflitException("Você não tem permissão para finalizar este pedido.");
-        }
-        if (order.getOrderStatus() != OrderStatus.PENDING) {
-            throw new ConflitException("Não é possível finalizar um pedido que não está PENDING.");
-        }
-        if (order.getOrderItems().isEmpty()) {
-            throw new ConflitException("Não é possível finalizar um pedido sem itens.");
-        }
-
-        order.setPaymentMethod(paymentMethod);
-        order.getPayment().setPaymentMethod(paymentMethod);
-        orderRepository.save(order);
-
-        try {
-            Payment updatedPayment = mercadoPagoService.createMercadoPagoPayment(order, order.getPayment());
-            updatedPayment.setOrder(order);
-
-            order.setPayment(updatedPayment);
-            paymentRepository.save(updatedPayment);
-            orderRepository.save(order);
-
-            return OrderMapper.toOrderResponseDTO(order);
-        } catch (MPException | MPApiException e) {
-            System.err.println("Erro ao criar o pagamento no Mercado Pago para o pedido " + orderId + ": " + e.getMessage());
-            if (e instanceof MPApiException) {
-                MPApiException apiException = (MPApiException) e;
-                System.err.println("Status HTTP: " + apiException.getStatusCode());
-                System.err.println("Conteúdo da resposta do MP: " + apiException.getApiResponse().getContent());
-            }
-            throw new RuntimeException("Erro ao criar o pagamento no Mercado Pago. Por favor, tente novamente.", e);
-        }
-    }
-
-const finalizeOrderMutation = useMutation({
-  mutationFn: (orderId: number) =>
-    ordersApi.finalizePayment(orderId, selectedMethod!),
-  onSuccess: (response) => {
-    const checkoutUrl = response.data.payment.paymentUrl;
-
-    if (checkoutUrl) {
-      toast({
-        title: "Pedido Gerado!",
-        description: "Redirecionando para o ambiente de pagamento...",
-        variant: "success",
-      });
-      window.location.href = checkoutUrl;
-    } else {
-      toast({
-        title: "Erro no Checkout",
-        description: "Não foi possível gerar o link de pagamento.",
-        variant: "destructive",
-      });
-    }
-
-    queryClient.invalidateQueries({ queryKey: ["pendingOrder"] });
-  },
-});
+APRO: CPF: 12345678909
+OTHE: CPF: 12345678909
+CONT: CPF: 12345678909
