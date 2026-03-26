@@ -73,7 +73,7 @@ public class OrderController {
 
     @GetMapping("/my")
     @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")
-    public ResponseEntity<List<OrderResponseDTO>> getMyOrderHistory(Pageable pageable) {
+    public ResponseEntity<Page<OrderResponseDTO>> getMyOrderHistory(Pageable pageable) {
         return ResponseEntity.ok(orderService.getMyOrderHistory(pageable));
     }
 

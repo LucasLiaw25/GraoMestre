@@ -344,10 +344,10 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponseDTO> getMyOrderHistory(Pageable pageable) {
+    public Page<OrderResponseDTO> getMyOrderHistory(Pageable pageable) {
         Long userId = SecurityUtils.getCurrentUserId();
-        List<Order> orders = orderRepository.findByUser_IdOrderByIdDesc(userId, pageable);
-        return OrderMapper.toOrderResponseDTOList(orders);
+        Page<Order> orders = orderRepository.findByUser_IdOrderByIdDesc(userId, pageable);
+        return orders.map(OrderMapper::toOrderResponseDTO);
     }
 
     @Transactional(readOnly = true)
