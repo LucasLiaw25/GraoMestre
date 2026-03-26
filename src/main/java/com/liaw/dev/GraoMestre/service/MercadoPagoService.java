@@ -157,6 +157,12 @@ public class MercadoPagoService {
         OffsetDateTime expirationDate = OffsetDateTime.now(ZoneOffset.of("-03:00"))
                 .plusMinutes(30).truncatedTo(ChronoUnit.SECONDS);
 
+        PreferencePaymentMethodsRequest paymentMethods = PreferencePaymentMethodsRequest.builder()
+                .excludedPaymentTypes(List.of())
+                .excludedPaymentMethods(List.of())
+                .installments(1)
+                .build();
+
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .items(items)
                 .payer(payer)
@@ -166,6 +172,7 @@ public class MercadoPagoService {
                 .notificationUrl(appConfig.getWebhookUrl())
                 .dateOfExpiration(expirationDate)
                 .statementDescriptor("GRAOMESTRE")
+                .paymentMethods(paymentMethods)
                 .build();
 
         Preference mpPreference= preferenceClient.create(preferenceRequest);
