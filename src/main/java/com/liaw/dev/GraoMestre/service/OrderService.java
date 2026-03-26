@@ -124,7 +124,7 @@ public class OrderService {
 
             order.setPayment(updatedPayment);
             paymentRepository.saveAndFlush(updatedPayment);
-            Order savedOrder = orderRepository.save(order);
+            Order savedOrder = orderRepository.saveAndFlush(order);
 
             return OrderMapper.toOrderResponseDTO(savedOrder);
         } catch (MPException | MPApiException e) {
