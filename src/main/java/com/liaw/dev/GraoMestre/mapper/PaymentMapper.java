@@ -22,6 +22,12 @@ public class PaymentMapper {
 
     public static PaymentResponseDTO toResponseDTO(Payment payment) {
         PaymentResponseDTO dto = new PaymentResponseDTO();
+        dto.setOrderId(payment.getOrder().getId());
+        dto.setQrCodeBase64(payment.getQrCodeBase64());
+        dto.setQrCodeText(payment.getQrCodeText());
+        dto.setPaymentUrl(payment.getPaymentUrl());
+        dto.setDateOfExpiration(payment.getDateOfExpiration());
+        dto.setDateApproved(payment.getDateApproved());
         dto.setId(payment.getId());
         dto.setPaymentMethod(payment.getPaymentMethod());
         dto.setPaymentStatus(payment.getPaymentStatus());

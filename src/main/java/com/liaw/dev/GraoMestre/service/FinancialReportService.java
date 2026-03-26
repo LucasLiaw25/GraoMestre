@@ -1,4 +1,4 @@
-package com.liaw.dev.GraoMestre.service; // Ajustado para o pacote do seu projeto atual
+package com.liaw.dev.GraoMestre.service;
 
 import com.liaw.dev.GraoMestre.dto.response.ExpenseResponseDTO;
 import com.liaw.dev.GraoMestre.dto.response.TopProductResponse;
@@ -8,9 +8,8 @@ import com.liaw.dev.GraoMestre.entity.Order;
 import com.liaw.dev.GraoMestre.entity.OrderItem;
 import com.liaw.dev.GraoMestre.entity.Product;
 import com.liaw.dev.GraoMestre.entity.Category;
-import com.liaw.dev.GraoMestre.repository.OrderRepository; // Ajustar o pacote do repositório
-// Ajustar o pacote do DTO se necessário
-import com.liaw.dev.GraoMestre.service.ExpenseService; // Assumindo que ExpenseService está no mesmo pacote ou importado
+import com.liaw.dev.GraoMestre.repository.OrderRepository;
+import com.liaw.dev.GraoMestre.service.ExpenseService;
 
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -47,15 +46,15 @@ public class FinancialReportService {
         private int totalOrders = 0;
         private int completedOrders = 0;
         private int canceledOrders = 0;
-        private int pendingOrders = 0; // Inclui PENDING e RECUSE
-        private int processingOrders = 0; // Pedidos em processamento
+        private int pendingOrders = 0;
+        private int processingOrders = 0;
 
         private BigDecimal netProfit = BigDecimal.ZERO;
         private Map<String, BigDecimal> revenueByCategory = new HashMap<>();
         private Map<String, BigDecimal> revenueByProduct = new HashMap<>();
         private Map<String, Integer> quantitySoldByProduct = new HashMap<>();
         private Map<String, Integer> quantitySoldByCategory = new HashMap<>();
-        private Map<String, BigDecimal> revenueByPaymentMethod = new HashMap<>(); // Nova métrica
+        private Map<String, BigDecimal> revenueByPaymentMethod = new HashMap<>();
 
         public BigDecimal getNetProfit() {
             return totalRevenue.subtract(totalExpenses);
@@ -268,7 +267,7 @@ public class FinancialReportService {
         return productRevenue.entrySet().stream()
                 .sorted(Map.Entry.<String, BigDecimal>comparingByValue().reversed())
                 .limit(limit)
-                .map(entry -> new TopProductResponse(entry.getKey(), entry.getValue())) // 🔥 AQUI ESTÁ A CORREÇÃO
+                .map(entry -> new TopProductResponse(entry.getKey(), entry.getValue()))
                 .toList();
     }
 

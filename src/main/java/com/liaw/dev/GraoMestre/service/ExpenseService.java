@@ -4,7 +4,7 @@ import com.liaw.dev.GraoMestre.dto.request.ExpeneRequestDTO;
 import com.liaw.dev.GraoMestre.dto.response.ExpenseResponseDTO;
 import com.liaw.dev.GraoMestre.entity.Expense;
 import com.liaw.dev.GraoMestre.enums.TimePeriod;
-import com.liaw.dev.GraoMestre.exception.exceptions.EntityNotFoundException; // Assuming this exception class exists in your project
+import com.liaw.dev.GraoMestre.exception.exceptions.EntityNotFoundException;
 import com.liaw.dev.GraoMestre.mapper.ExpenseMapper;
 import com.liaw.dev.GraoMestre.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
-import java.util.stream.Collectors; // Import for Collectors
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,13 +44,9 @@ public class ExpenseService {
     public ExpenseResponseDTO updateExpense(Long id, ExpeneRequestDTO request){
         Expense existingExpense = expenseRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Despesa não encontrada com ID: " + id));
-        // Update fields from the request DTO
+
         existingExpense.setName(request.getName());
         existingExpense.setPrice(request.getPrice());
-        // The date field is typically not updated via a request DTO in this manner,
-        // as it's often set on creation or managed separately.
-        // If you intend to allow date updates, you would need to add 'date' to ExpeneRequestDTO.
-        // For now, I'm omitting `existingExpense.setDate(request.getDate());` as ExpeneRequestDTO doesn't have a date field.
         expenseRepository.save(existingExpense);
         return expenseMapper.toResponse(existingExpense);
     }

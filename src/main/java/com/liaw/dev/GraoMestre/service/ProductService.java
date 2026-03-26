@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors; // Importar Collectors
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -30,10 +30,10 @@ public class ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @Value("${app.base-url}") // Injetar a base URL da aplicação
+    @Value("${app.base-url}")
     private String appBaseUrl;
 
-    @Value("${image.base-path}") // Injetar o base path das imagens
+    @Value("${image.base-path}")
     private String imageBasePath;
 
     @Autowired
@@ -167,7 +167,7 @@ public class ProductService {
 
         product.setActive(false);
         product = productRepository.save(product);
-        return toResponseDTOWithFullImageUrl(product); // Retorna DTO com URL completa
+        return toResponseDTOWithFullImageUrl(product);
     }
 
     @Transactional
@@ -181,6 +181,6 @@ public class ProductService {
 
         product.setActive(true);
         product = productRepository.save(product);
-        return toResponseDTOWithFullImageUrl(product); // Retorna DTO com URL completa
+        return toResponseDTOWithFullImageUrl(product);
     }
 }

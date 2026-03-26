@@ -67,7 +67,6 @@ public class MercadoPagoService {
 
         switch (paymentEntity.getPaymentMethod()) {
             case PIX:
-                return createPixPayment(order, paymentEntity);
             case CREDIT_CARD:
             case DEBIT_CARD:
                 return createCheckoutProPreference(order, paymentEntity);
@@ -155,6 +154,9 @@ public class MercadoPagoService {
                 .pending(appConfig.getPendingUrl())
                 .build();
 
+        OffsetDateTime expirationDate = OffsetDateTime.now(ZoneOffset.of("-03:00"))
+                .plusMinutes(30).truncatedTo(ChronoUnit.SECONDS);
+
         PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                 .items(items)
                 .payer(payer)
@@ -162,6 +164,7 @@ public class MercadoPagoService {
                 .autoReturn("approved")
                 .externalReference(String.valueOf(order.getId()))
                 .notificationUrl(appConfig.getWebhookUrl())
+                .dateOfExpiration(expirationDate)
                 .statementDescriptor("GRAOMESTRE")
                 .build();
 
@@ -177,7 +180,7 @@ public class MercadoPagoService {
     @Transactional
     public void processNotification(MercadoPagoWebhookNotificationDTO notification) throws MPException, MPApiException {
         String resourceId = notification.getData().getId();
-        String resourceType = notification.getType(); // "payment" ou "merchant_order"
+        String resourceType = notification.getType();
 
         if ("payment".equals(resourceType)) {
             log.info("Processando notificação de pagamento para ID: {}", resourceId);
@@ -203,7 +206,7 @@ public class MercadoPagoService {
                 PaymentStatus newPaymentStatus = mapMercadoPagoStatusToPaymentStatus(mpPayment.getStatus());
                 OrderStatus newOrderStatus = mapMercadoPagoStatusToOrderStatus(mpPayment.getStatus());
 
-                if (localPayment.getPaymentStatus() != newPaymentStatus || order.getOrderStatus() != newOrderStatus) { // Evita atualizações desnecessárias
+                if (localPayment.getPaymentStatus() != newPaymentStatus || order.getOrderStatus() != newOrderStatus) {
                     localPayment.setPaymentStatus(newPaymentStatus);
                     order.setOrderStatus(newOrderStatus);
 

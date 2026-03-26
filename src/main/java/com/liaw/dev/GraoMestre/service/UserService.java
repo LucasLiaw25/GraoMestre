@@ -191,14 +191,13 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + id));
-        // Opcional: Remover tokens de verificação associados antes de deletar o usuário
         verificationTokenRepository.deleteByUser(user);
         userRepository.delete(user);
     }
 
     private String generateJwtToken(User user) {
         Instant now = Instant.now();
-        long expiry = 36000L; // 10 horas de validade para o token
+        long expiry = 36000L;
 
         String scopes = user.getScopes().stream()
                 .map(Scope::getName)
@@ -208,9 +207,9 @@ public class UserService {
                 .issuer("self")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiry))
-                .subject(user.getEmail()) // O subject do token é o email do usuário
-                .claim("id", user.getId()) // Adiciona o ID do usuário como claim
-                .claim("scope", scopes) // Adiciona os escopos como uma claim
+                .subject(user.getEmail())
+                .claim("id", user.getId())
+                .claim("scope", scopes)
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();

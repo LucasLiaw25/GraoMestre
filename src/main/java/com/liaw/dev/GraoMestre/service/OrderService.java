@@ -22,6 +22,7 @@ import com.mercadopago.exceptions.MPException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -177,13 +178,13 @@ public class OrderService {
                 int oldQuantity = existingItem.getQuantity();
                 int newTotalQuantity = oldQuantity + newItemDto.getQuantity();
 
-                if (product.getStorage() < newItemDto.getQuantity()) { // Verifica apenas a quantidade *adicional*
+                if (product.getStorage() < newItemDto.getQuantity()) {
                     throw new ConflitException("Estoque insuficiente para adicionar mais do produto: " + product.getName());
                 }
 
                 existingItem.setQuantity(newTotalQuantity);
                 currentOrderPrice = currentOrderPrice.add(product.getPrice().multiply(BigDecimal.valueOf(newItemDto.getQuantity())));
-                product.setStorage(product.getStorage() - newItemDto.getQuantity()); // Reduz estoque pela quantidade adicionada
+                product.setStorage(product.getStorage() - newItemDto.getQuantity());
             } else {
                 if (product.getStorage() < newItemDto.getQuantity()) {
                     throw new ConflitException("Estoque insuficiente para o produto: " + product.getName());
@@ -194,20 +195,32 @@ public class OrderService {
                 orderItem.setQuantity(newItemDto.getQuantity());
                 orderItem.setPriceAtTime(product.getPrice());
                 orderItem.setOrder(order);
-                order.getOrderItems().add(orderItem); // Adiciona à lista do pedido
+                order.getOrderItems().add(orderItem);
 
                 currentOrderPrice = currentOrderPrice.add(product.getPrice().multiply(BigDecimal.valueOf(newItemDto.getQuantity())));
-                product.setStorage(product.getStorage() - newItemDto.getQuantity()); // Reduz estoque
+                product.setStorage(product.getStorage() - newItemDto.getQuantity());
             }
-            productRepository.save(product); // Salva o produto com estoque atualizado
+            productRepository.save(product);
         }
 
         order.setTotalPrice(currentOrderPrice);
         if (order.getPayment() != null) {
             order.getPayment().setTotalPrice(currentOrderPrice);
         }
-        order = orderRepository.save(order); // Salva o pedido com os itens atualizados
+        order = orderRepository.save(order);
         return OrderMapper.toOrderResponseDTO(order);
+    }
+
+    @Scheduled(fixedDelay = 360000)
+    public void deletePendingOrder(){
+        List<Order> orders = orderRepository.findByOrderStatus(OrderStatus.PENDING);
+        LocalDateTime now = LocalDateTime.now();
+        for (Order order : orders){
+            if (now.isAfter(order.getOrderDate().plusHours(8))){
+                order.setOrderStatus(OrderStatus.CANCELED);
+                orderRepository.save(order);
+            }
+        }
     }
 
     private List<OrderItem> processOrderItems(Order order, List<OrderItemRequestDTO> itemDtos) {
@@ -267,14 +280,13 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new EntityNotFoundException("Item do pedido não encontrado com ID: " + orderItemId));
 
-        // Devolve o estoque
+
         Product product = itemToRemove.getProduct();
         product.setStorage(product.getStorage() + itemToRemove.getQuantity());
         productRepository.save(product);
 
-        // Remove o item da lista e atualiza o total
         order.getOrderItems().remove(itemToRemove);
-        orderItemRepository.delete(itemToRemove); // Exclui o OrderItem do banco de dados
+        orderItemRepository.delete(itemToRemove);
 
         BigDecimal newTotalPrice = calculateTotalPrice(order.getOrderItems());
         order.setTotalPrice(newTotalPrice);
@@ -308,18 +320,18 @@ public class OrderService {
         int oldQuantity = itemToUpdate.getQuantity();
         int quantityDifference = newQuantity - oldQuantity;
 
-        if (quantityDifference > 0) { // Aumentando a quantidade
+        if (quantityDifference > 0) {
             if (product.getStorage() < quantityDifference) {
                 throw new ConflitException("Estoque insuficiente para aumentar a quantidade do produto: " + product.getName());
             }
             product.setStorage(product.getStorage() - quantityDifference);
-        } else if (quantityDifference < 0) { // Diminuindo a quantidade
-            product.setStorage(product.getStorage() - quantityDifference); // Adiciona de volta ao estoque
+        } else if (quantityDifference < 0) {
+            product.setStorage(product.getStorage() - quantityDifference);
         }
         productRepository.save(product);
 
         itemToUpdate.setQuantity(newQuantity);
-        BigDecimal newTotalPrice = calculateTotalPrice(order.getOrderItems()); // Recalcula com o item atualizado
+        BigDecimal newTotalPrice = calculateTotalPrice(order.getOrderItems());
         order.setTotalPrice(newTotalPrice);
         if (order.getPayment() != null) {
             order.getPayment().setTotalPrice(newTotalPrice);
