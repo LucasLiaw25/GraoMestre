@@ -37,6 +37,7 @@ public class OrderMapper {
         dto.setId(payment.getId());
         dto.setPaymentMethod(payment.getPaymentMethod());
         dto.setPaymentStatus(payment.getPaymentStatus());
+        dto.setPaymentUrl(payment.getPaymentUrl());
         dto.setTxId(payment.getTxId());
         dto.setTotalPrice(payment.getTotalPrice());
         return dto;
