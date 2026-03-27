@@ -59,7 +59,7 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, userRequestDTO));
     }
 
-    @PostMapping("/change-password/{email}")
+    @PostMapping("/change-password/{email:.+}")
     public void changePasswordEmail(@PathVariable String email){
         userService.changePassword(email);
     }
