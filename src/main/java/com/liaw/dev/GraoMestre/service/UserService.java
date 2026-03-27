@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,9 @@ public class UserService {
     @Value("${app.base-url}")
     private String appBaseUrl;
 
+    @Value("${front.base-url}")
+    private String fronUrl;
+
     @Transactional
     public UserResponseDTO registerUser(UserRegisterRequestDTO userRegisterRequestDTO) {
         if (userRepository.findByEmail(userRegisterRequestDTO.getEmail()).isPresent()) {
@@ -81,6 +85,22 @@ public class UserService {
         String activationLink = appBaseUrl + "/api/users/activate?token=" + token;
         emailService.sendActivationEmail(user.getEmail(), activationLink);
         return UserMapper.toResponseDTO(user);
+    }
+
+    public void changePassword(String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(()-> new EntityNotFoundException("Usuário não encontrado"));
+
+        verificationTokenRepository.findByUser(user)
+                .ifPresent(token-> verificationTokenRepository.delete(token));
+
+        LocalDateTime expiryDate = LocalDateTime.now().plusHours(24);
+        String token = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken(token, user, expiryDate);
+        verificationTokenRepository.save(verificationToken);
+
+        String link = fronUrl + "/change-password?token=" + token;
+        emailService.sendChangePasswordEmail(user.getEmail(), link);
     }
 
     @Transactional(readOnly = true)
@@ -160,16 +180,31 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO updateUserPassword(Long id, String newPassword) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + id));
+    public UserResponseDTO updateUserPassword(String token, String newPassword) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Token de ativação inválido."));
+
+        User user = userRepository.findById(verificationToken.getUser().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + verificationToken.getUser().getId()));
+
+        Optional<VerificationToken> existToken = verificationTokenRepository.findByUser(user);
+        if (existToken.isPresent()){
+            VerificationToken foundedToken = existToken.get();
+            verificationTokenRepository.delete(foundedToken);
+        }
 
         if (newPassword == null || newPassword.trim().isEmpty() || newPassword.length() < 6) {
             throw new BadCredentialsException("A nova senha deve ter no mínimo 6 caracteres.");
         }
 
+        if (LocalDateTime.now().isAfter(verificationToken.getExpiryDate())){
+            verificationTokenRepository.delete(verificationToken);
+            throw new ConflitException("Token expirado");
+        }
+
         user.setPassword(passwordEncoder.encode(newPassword));
         user = userRepository.save(user);
+        verificationTokenRepository.deleteByUser(user);
         return UserMapper.toResponseDTO(user);
     }
 

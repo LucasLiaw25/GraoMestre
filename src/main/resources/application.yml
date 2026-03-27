@@ -41,3 +41,6 @@ mercadopago:
     success: ${MP_SUCCESS_URL}
     failure: ${MP_FAILURE_URL}
     pending: ${MP_PENDING_URL}
+
+front:
+  base-url: ${FRONT_BASE_URL}

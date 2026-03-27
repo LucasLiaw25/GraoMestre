@@ -59,11 +59,15 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, userRequestDTO));
     }
 
-    @PutMapping("/{id}/password")
-    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN', 'SCOPE_MANAGER', 'SCOPE_USER')")
-    public ResponseEntity<UserResponseDTO> updateUserPassword(@PathVariable Long id, @RequestBody Map<String, String> passwordMap) {
+    @PostMapping("/change-password/{email}")
+    public void changePasswordEmail(@PathVariable String email){
+        userService.changePassword(email);
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<UserResponseDTO> updateUserPassword(@RequestParam String token, @RequestBody Map<String, String> passwordMap) {
         String newPassword = passwordMap.get("newPassword");
-        return ResponseEntity.ok(userService.updateUserPassword(id, newPassword));
+        return ResponseEntity.ok(userService.updateUserPassword(token, newPassword));
     }
 
     @PutMapping("/{id}/scopes")
