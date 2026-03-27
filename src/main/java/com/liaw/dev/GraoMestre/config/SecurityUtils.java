@@ -11,7 +11,7 @@ public class SecurityUtils {
             Jwt jwt = (Jwt) authentication.getPrincipal();
             return jwt.getClaim("id");
         }
-        throw new IllegalStateException("Usuário não autenticado ou ID não encontrado no token.");
+        throw new IllegalStateException("Usuário não está autenticado ou ID não encontrado no token.");
     }
 
     public static String getCurrentUserEmail() {
