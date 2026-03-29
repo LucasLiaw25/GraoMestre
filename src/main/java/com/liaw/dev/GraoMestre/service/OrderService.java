@@ -216,6 +216,7 @@ public class OrderService {
     @Transactional
     @Scheduled(fixedDelay = 360000)
     public void deletePendingOrder(){
+        System.out.println("========== Começando verificação de pedidos pendentes ==========");
         List<Order> orders = orderRepository.findByOrderStatus(OrderStatus.PENDING);
         LocalDateTime now = LocalDateTime.now();
         for (Order order : orders){
