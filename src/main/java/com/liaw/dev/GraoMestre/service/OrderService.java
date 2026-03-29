@@ -213,6 +213,7 @@ public class OrderService {
         return OrderMapper.toOrderResponseDTO(order);
     }
 
+    @Transactional
     @Scheduled(fixedDelay = 360000)
     public void deletePendingOrder(){
         List<Order> orders = orderRepository.findByOrderStatus(OrderStatus.PENDING);
@@ -343,8 +344,7 @@ public class OrderService {
         return OrderMapper.toOrderResponseDTO(order);
     }
 
-    @Transactional(readOnly = true)
-    public Page<OrderResponseDTO> getMyOrderHistory(Pageable pageable) {
+    @Transactional(readOnly = true)    public Page<OrderResponseDTO> getMyOrderHistory(Pageable pageable) {
         Long userId = SecurityUtils.getCurrentUserId();
         Page<Order> orders = orderRepository.findByUser_IdOrderByIdDesc(userId, pageable);
         return orders.map(OrderMapper::toOrderResponseDTO);
